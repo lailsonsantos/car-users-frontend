@@ -1,0 +1,44 @@
+<div>
+  <h2>Cadastro de Carros</h2>
+  <form [formGroup]="carForm" (ngSubmit)="onSubmit()">
+    <input formControlName="year" placeholder="Ano" />
+    <input formControlName="licensePlate" placeholder="Placa" />
+    <input formControlName="model" placeholder="Modelo" />
+    <input formControlName="color" placeholder="Cor" />
+    <button type="submit" *ngIf="!editingCarId">Salvar</button>
+    <button type="button" (click)="saveCar(car.id)" *ngIf="editingCarId">Salvar Alterações</button>
+  </form>
+</div>
+
+<div>
+  <h2>Lista de Carros</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Ano</th>
+        <th>Placa</th>
+        <th>Modelo</th>
+        <th>Cor</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let car of cars">
+        <td>
+          <img *ngIf="car.photoUrl" [src]="car.photoUrl" alt="Foto" width="50" height="50" />
+          <input type="file" (change)="onCarPhotoSelected($event, car.id)" />
+        </td>
+        <td>{{ car.year }}</td>
+        <td>{{ car.licensePlate }}</td>
+        <td>{{ car.model }}</td>
+        <td>{{ car.color }}</td>
+        <td>
+          <button (click)="enableEditing(car)">✏️</button>
+          <button *ngIf="editingCarId === car.id" (click)="saveCar(car.id)">💾</button>
+          <button (click)="deleteCar(car.id)">🗑️</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

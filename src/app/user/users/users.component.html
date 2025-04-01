@@ -1,0 +1,45 @@
+<div>
+  <h2>Cadastro de Usuários</h2>
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <input formControlName="firstName" placeholder="Nome" />
+    <input formControlName="lastName" placeholder="Sobrenome" />
+    <input formControlName="email" placeholder="Email" />
+    <input formControlName="birthday" type="date" placeholder="Data de Nascimento" />
+    <input formControlName="login" placeholder="Login" />
+    <input type="password" formControlName="password" placeholder="Senha" />
+    <input formControlName="phone" placeholder="Telefone" />
+    <button type="submit" *ngIf="!editingUserId">Salvar</button>
+    <button type="button" (click)="saveUser(user.id)" *ngIf="editingUserId">Salvar Alterações</button>
+  </form>
+</div>
+
+<div>
+  <h2>Lista de Usuários</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Login</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>
+          <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Foto" width="50" height="50" />
+          <input type="file" (change)="onUserPhotoSelected($event, user.id)" />
+        </td>
+        <td>{{ user.firstName }} {{ user.lastName }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.login }}</td>
+        <td>
+          <button (click)="enableEditing(user)">✏️</button>
+          <button *ngIf="editingUserId === user.id" (click)="saveUser(user.id)">💾</button>
+          <button (click)="deleteUser(user.id)">🗑️</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

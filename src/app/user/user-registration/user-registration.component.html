@@ -1,0 +1,12 @@
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+  <!-- Campos do formulário: firstName, lastName, email, etc. -->
+  <input formControlName="firstName" placeholder="Nome" />
+  <input formControlName="lastName" placeholder="Sobrenome" />
+  <input formControlName="email" placeholder="Email" />
+  <input formControlName="birthday" type="date" placeholder="Data de Nascimento" />
+  <input formControlName="login" placeholder="Login" />
+  <input type="password" formControlName="password" placeholder="Senha" />
+  <input formControlName="phone" placeholder="Telefone" />
+  <button type="submit">Cadastrar</button>
+  <div *ngIf="errorMessage">{{ errorMessage }}</div>
+</form>

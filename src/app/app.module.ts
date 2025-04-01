@@ -4,7 +4,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 
-import { AppComponent } from './app.component';
 import { LoginComponent } from './auth/login/login.component';
 import { UserRegistrationComponent } from './user/user-registration/user-registration.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -18,7 +17,6 @@ import { CarService } from './car/car.service';
 
 @NgModule({
   declarations: [
-    AppComponent,
     LoginComponent,
     UserRegistrationComponent,
     DashboardComponent,
@@ -37,6 +35,6 @@ import { CarService } from './car/car.service';
     UserService,
     CarService
   ],
-  bootstrap: [AppComponent]
+  bootstrap: []
 })
 export class AppModule { }

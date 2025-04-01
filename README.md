@@ -1,23 +1,42 @@
-# car-users-frontend
-Desafio Pitang Usuario carros
+# Car Users Fullstack App 🚗👤
 
+Aplicação Fullstack Angular + Spring Boot com login, cadastro e gerenciamento de usuários e carros.
 
 ---
 
-## 📘 `README.md` – FRONTEND (Angular)
+## ✅ Estórias de Usuário
 
-```markdown
-# Pitang Challenge – Frontend (Angular)
+1. Eu, como usuário, desejo me autenticar com login e senha.
+2. Eu, como usuário, desejo cadastrar minha conta e enviar uma foto.
+3. Eu, como usuário autenticado, desejo adicionar carros, editar e excluir.
+4. Eu, como administrador, desejo listar todos os usuários e seus carros.
+5. Eu, como desenvolvedor, desejo visualizar a documentação Swagger.
+6. Eu, como devops, desejo rodar tudo com Docker e deployar no Heroku.
+7. Eu, como usuário, desejo que todas as mensagens de erro tenham padrão JSON.
 
-Este é o frontend da aplicação para o desafio técnico Pitang.
+---
 
-## ⚙️ Tecnologias
+## 💡 Solução Técnica
 
-- Angular
-- TypeScript
-- RxJS + HTTPClient
-- Docker + NGINX
-- Heroku (build Node.js)
+- Angular 15+ no front-end com AuthInterceptor e roteamento
+- Spring Boot no back-end com autenticação JWT
+- Upload de imagem com multipart/form-data
+- Swagger para documentação
+- Docker multi-stage (build front + back)
+- Deploy automatizado no Heroku com `heroku.yml` e `Procfile`
+
+---
+
+## 🚀 Como executar localmente
+
+```bash
+# Requisitos
+Java 17, Node 18, Maven, Angular CLI, Docker
+
+# Rodar localmente sem Docker
+cd frontend && npm install && ng build --configuration production
+cd ../backend && ./mvnw spring-boot:run
+```
 
 ---
 

@@ -1,0 +1,7 @@
+{
+  "root": "dist/car-users-frontend",
+  "clean_urls": true,
+  "routes": {
+    "/**": "index.html"
+  }
+}

@@ -1,19 +1,15 @@
-FROM node:22.14.0
+# Etapa 1: Build do Angular
+FROM node:22-alpine AS build
 
-# Diretório de trabalho
 WORKDIR /app
-
-# Copia os arquivos de package
 COPY package*.json ./
-
-# Instala as dependências
 RUN npm install
-
-# Copia o restante dos arquivos do projeto
 COPY . .
+RUN npm run build --prod
 
-# Exponha a porta 4200
-EXPOSE 4200
-
-# Comando para iniciar a aplicação no modo de desenvolvimento
-CMD ["npx", "ng", "serve", "--host", "0.0.0.0"]
+# Etapa 2: Servindo com Nginx
+FROM nginx:alpine
+COPY --from=build /app/dist/car-users-frontend /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

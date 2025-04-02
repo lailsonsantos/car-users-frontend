@@ -9,7 +9,7 @@
     <input type="password" formControlName="password" placeholder="Senha" />
     <input formControlName="phone" placeholder="Telefone" />
     <button type="submit" *ngIf="!editingUserId">Salvar</button>
-    <button type="button" (click)="saveUser(user.id)" *ngIf="editingUserId">Salvar Alterações</button>
+    <button type="button" (click)="saveUser(editingUserId!)" *ngIf="editingUserId">Salvar Alterações</button>
   </form>
 </div>
 

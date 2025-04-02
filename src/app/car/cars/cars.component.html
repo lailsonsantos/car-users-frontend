@@ -6,7 +6,7 @@
     <input formControlName="model" placeholder="Modelo" />
     <input formControlName="color" placeholder="Cor" />
     <button type="submit" *ngIf="!editingCarId">Salvar</button>
-    <button type="button" (click)="saveCar(car.id)" *ngIf="editingCarId">Salvar Alterações</button>
+    <button type="button" (click)="saveCar(editingCarId!)" *ngIf="editingCarId">Salvar Alterações</button>
   </form>
 </div>
 

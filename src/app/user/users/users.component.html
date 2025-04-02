@@ -1,19 +1,18 @@
-<div>
-  <h2>Cadastro de Usuários</h2>
-  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
-    <input formControlName="firstName" placeholder="Nome" />
-    <input formControlName="lastName" placeholder="Sobrenome" />
-    <input formControlName="email" placeholder="Email" />
-    <input formControlName="birthday" type="date" placeholder="Data de Nascimento" />
-    <input formControlName="login" placeholder="Login" />
-    <input type="password" formControlName="password" placeholder="Senha" />
-    <input formControlName="phone" placeholder="Telefone" />
-    <button type="submit" *ngIf="!editingUserId">Salvar</button>
-    <button type="button" (click)="saveUser(editingUserId!)" *ngIf="editingUserId">Salvar Alterações</button>
+<mat-card class="mat-elevation-z4" style="max-width: 600px; margin: 2rem auto; padding: 2rem;">
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()" style="display: flex; flex-direction: column; gap: 1rem;">
+    <div style="display: flex; gap: 1rem;">
+      <input formControlName="firstName" placeholder="Nome" />
+      <input formControlName="lastName" placeholder="Sobrenome" />
+      <input formControlName="email" placeholder="Email" />
+      <input formControlName="birthday" type="date" placeholder="Data de Nascimento" />
+      <input formControlName="login" placeholder="Login" />
+      <input type="password" formControlName="password" placeholder="Senha" />
+      <input formControlName="phone" placeholder="Telefone" />
+      <button mat-raised-button color="primary" type="submit">Salvar</button>
+      <button mat-raised-button color="primary" type="button">Salvar Alterações</button>
+    </div>
   </form>
-</div>
-
-<div>
+  <div>
   <h2>Lista de Usuários</h2>
   <table>
     <thead>
@@ -35,11 +34,12 @@
         <td>{{ user.email }}</td>
         <td>{{ user.login }}</td>
         <td>
-          <button (click)="enableEditing(user)">✏️</button>
-          <button *ngIf="editingUserId === user.id" (click)="saveUser(user.id)">💾</button>
-          <button (click)="deleteUser(user.id)">🗑️</button>
+          <button (click)="enableEditing(user)">habEditar</button>
+          <button *ngIf="editingUserId === user.id" (click)="saveUser(user.id)">editar</button>
+          <button (click)="deleteUser(user.id)">deletar</button>
         </td>
       </tr>
     </tbody>
   </table>
-</div>
+  </div>
+</mat-card>

@@ -2,10 +2,10 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-app.use(express.static(path.join(__dirname, 'dist/car-users-frontend')));
+app.use(express.static(__dirname + '/dist/car-users-frontend'));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist/car-users-frontend/index.html'));
+app.get('/*', function(req,res) {
+  res.sendFile(path.join(__dirname + '/dist/car-users-frontend/index.html'));
 });
 
 const PORT = process.env.PORT || 8080;

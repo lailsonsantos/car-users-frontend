@@ -33,6 +33,10 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router
   ) {
+    if (localStorage.getItem('token')) {
+      this.router.navigate(['/api/users']);
+    }
+    
     this.loginForm = this.fb.group({
       login: ['', Validators.required],
       password: ['', Validators.required]
@@ -41,9 +45,9 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      debugger
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
+          debugger
           localStorage.setItem('token', response.token);
           this.router.navigate(['/api/users']);
         },

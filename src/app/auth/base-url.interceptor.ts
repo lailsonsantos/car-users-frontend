@@ -1,32 +1,31 @@
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class BaseUrlInterceptor implements HttpInterceptor {
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    console.log('environment.baseUrl: ', environment.baseUrl)
-    const apiReq = req.clone({ url: req.url.startsWith('http') ? req.url : `${environment.baseUrl}${req.url}` });
-    console.log('apiReq: ', apiReq)
-    return next.handle(apiReq);
-  }
-}
+  constructor(private router: Router) {}
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = localStorage.getItem('token');
-
-    let authReq = req;
-    if (token) {
-      authReq = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+    if (req.url.startsWith('http') || req.url.startsWith('assets/')) {
+      return next.handle(req);
     }
-    console.log('authReq: ', authReq)
-    return next.handle(authReq);
+
+    const apiReq = req.clone({
+      url: `${environment.baseUrl}${req.url}`,
+      withCredentials: true
+    });
+
+    return next.handle(apiReq).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 401) {
+          localStorage.removeItem('token');
+          this.router.navigate(['/api/signin']);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 }

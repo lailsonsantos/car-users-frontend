@@ -9,6 +9,7 @@ import {
   ReactiveFormsModule
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatCardModule } from '@angular/material/card';
@@ -20,7 +21,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { UserService } from '../../core/services/user.service';
 import { Car } from '../../core/models/car.model';
 import { User } from '../../core/models/user.model';
-import { CommonModule } from '@angular/common';
 
 interface CarForm {
   year: FormControl<number | null>;
@@ -44,8 +44,8 @@ interface UserForm {
   selector: 'app-users',
   standalone: true,
   imports: [
-    BrowserModule,
     CommonModule,
+    BrowserModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
     MatCardModule,

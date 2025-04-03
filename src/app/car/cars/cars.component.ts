@@ -7,6 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { CarService } from '../../core/services/car.service';
+import { AuthService } from '../../auth/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-cars',
@@ -27,8 +29,9 @@ export class CarsComponent implements OnInit {
   carForm: FormGroup;
   cars: any[] = [];
   editingCarId: number | null = null;
+  currentUserId: any;
 
-  constructor(private fb: FormBuilder, private carService: CarService) {
+  constructor(private fb: FormBuilder, private authService: AuthService, private carService: CarService, private router: Router) {
     this.carForm = this.fb.group({
       year: ['', [Validators.required, Validators.min(1900), Validators.max(new Date().getFullYear())]],
       licensePlate: ['', [Validators.required, Validators.pattern(/^[A-Z]{3}[0-9][A-Z][0-9]{2}$/)]],
@@ -38,12 +41,21 @@ export class CarsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadCars();
+    const navigation = this.router.getCurrentNavigation();
+    const stateUser = navigation?.extras?.state?.['user'];
+  
+    if (stateUser) {
+      this.currentUserId = stateUser.id;
+    } else {
+      this.currentUserId = this.authService.getUserId();
+    }
+    this.loadCars(this.currentUserId);
   }
 
-  loadCars() {
-    this.carService.getAllCars().subscribe(data => {
-      this.cars = data;
+  loadCars(userId?: number) {
+    this.carService.getAllCars(userId).subscribe({
+      next: (data) => this.cars = data,
+      error: (err) => console.error('Erro ao carregar carros:', err)
     });
   }
 

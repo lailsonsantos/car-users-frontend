@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, Event, NavigationEnd } from '@angular/router';
+import { Router, Event, NavigationEnd, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -35,10 +34,11 @@ export class AppComponent implements OnInit {
     const token = localStorage.getItem('token');
     const isSignInRoute = url.includes('/api/signin');
     const isAssetRoute = url.includes('/assets/');
-
+    const isUsersRoute = url.includes('/api/users');
+  
     if (token && isSignInRoute) {
       this.router.navigate(['/api/users']);
-    } else if (!token && !isSignInRoute && !isAssetRoute) {
+    } else if (!token && !isSignInRoute && !isAssetRoute && !isUsersRoute) {
       this.router.navigate(['/api/signin']);
     }
   }
@@ -48,10 +48,9 @@ export class AppComponent implements OnInit {
     const token = localStorage.getItem('token');
     const isSignInRoute = currentPath.includes('/api/signin');
     const isAssetRoute = currentPath.includes('/assets/');
-
-    if (token && isSignInRoute) {
-      this.router.navigate(['/api/users']);
-    } else if (!token && !isSignInRoute && !isAssetRoute) {
+    const isUsersRoute = currentPath.includes('/api/users');
+  
+    if (!token && !isSignInRoute && !isAssetRoute && !isUsersRoute) {
       this.router.navigate(['/api/signin']);
     }
   }

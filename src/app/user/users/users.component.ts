@@ -8,10 +8,7 @@ import {
   FormControl,
   ReactiveFormsModule
 } from '@angular/forms';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -21,6 +18,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { UserService } from '../../core/services/user.service';
 import { Car } from '../../core/models/car.model';
 import { User } from '../../core/models/user.model';
+import { Router } from '@angular/router';
 
 interface CarForm {
   year: FormControl<number | null>;
@@ -45,8 +43,6 @@ interface UserForm {
   standalone: true,
   imports: [
     CommonModule,
-    BrowserModule,
-    BrowserAnimationsModule,
     ReactiveFormsModule,
     MatCardModule,
     MatIconModule,
@@ -197,7 +193,7 @@ export class UsersComponent implements OnInit {
       const formValue = this.userForm.value;
   
       const rawCars = formValue.cars?.map(carGroup => {
-        debugger
+
         const carValue = carGroup;
 
         const isEmpty =
@@ -280,7 +276,7 @@ export class UsersComponent implements OnInit {
   }
 
   viewUserCars(user: User): void {
-    this.router.navigate(['/api/cars'], { state: { user } });
+    this.router.navigate(['/api/cars'], { state: { user: user } });
   }
 
   private markFormGroupTouched(formGroup: AbstractControl): void {

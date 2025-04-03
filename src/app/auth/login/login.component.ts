@@ -47,7 +47,6 @@ export class LoginComponent {
     if (this.loginForm.valid) {
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
-          debugger
           localStorage.setItem('token', response.token);
           this.router.navigate(['/api/users']);
         },

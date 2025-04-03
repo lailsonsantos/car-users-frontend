@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -10,7 +9,7 @@ export class CarService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<Car[]> {
+  getAllCars(): Observable<Car[]> {
     return this.http.get<Car[]>(this.baseUrl);
   }
 
@@ -18,15 +17,21 @@ export class CarService {
     return this.http.get<Car>(`${this.baseUrl}/${id}`);
   }
 
-  create(car: Car): Observable<Car> {
+  createCar(car: Car): Observable<Car> {
     return this.http.post<Car>(this.baseUrl, car);
   }
 
-  update(id: number, car: Car): Observable<Car> {
+  updateCar(id: number, car: Car): Observable<Car> {
     return this.http.put<Car>(`${this.baseUrl}/${id}`, car);
   }
 
-  delete(id: number): Observable<void> {
+  deleteCar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+
+  uploadCarPhoto(carId: number, file: File): Observable<any> {
+      const formData = new FormData();
+      formData.append('file', file);
+      return this.http.post(`${this.baseUrl}/${carId}/photo`, formData);
+    }
 }

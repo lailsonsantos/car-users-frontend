@@ -1,15 +1,19 @@
-
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { UserService } from '../core/services/user.service';
 import { User } from '../core/models/user.model';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-me',
-  template: `
-    <h2>Welcome, {{ user?.firstName }}</h2>
-    <p>Email: {{ user?.email }}</p>
-    <p>Login: {{ user?.login }}</p>
-  `
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatIconModule
+  ],
+  templateUrl: './me.component.html'
 })
 export class MeComponent implements OnInit {
   user?: User;
@@ -17,6 +21,13 @@ export class MeComponent implements OnInit {
   constructor(private userService: UserService) {}
 
   ngOnInit() {
-    this.userService.getMe().subscribe(user => this.user = user);
+    this.userService.getMe().subscribe({
+      next: (user) => {
+        this.user = user;
+      },
+      error: (err) => {
+        console.error('Erro ao buscar /api/me:', err);
+      }
+    });
   }
 }

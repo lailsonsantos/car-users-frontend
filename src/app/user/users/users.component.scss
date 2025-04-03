@@ -1,0 +1,51 @@
+/* Estilos para os botões */
+button[mat-raised-button] {
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+}
+
+/* Estilo específico para cada tipo de botão */
+button[mat-raised-button][color="primary"]:hover {
+  background-color: #303f9f !important;
+}
+
+button[mat-raised-button][color="accent"]:hover {
+  background-color: #ff4081 !important;
+}
+
+button[mat-raised-button][color="warn"]:hover {
+  background-color: #f44336 !important;
+}
+
+/* Estilo para botões de ícone */
+button[mat-icon-button] {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  mat-card > div > div {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .form-row, .form-actions {
+    grid-template-columns: 1fr !important;
+  }
+  
+  button[mat-raised-button] {
+    margin-bottom: 1rem;
+  }
+}

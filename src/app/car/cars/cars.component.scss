@@ -38,3 +38,75 @@ button[mat-icon-button] {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Estilos comuns para ambos os componentes */
+.mat-form-field-invalid {
+  .mat-form-field-outline {
+    color: #f44336 !important;
+  }
+
+  .mat-input-element {
+    color: #f44336 !important;
+  }
+
+  .mat-form-field-label {
+    color: #f44336 !important;
+  }
+}
+
+.error-snackbar {
+  background-color: #f44336;
+  color: white;
+}
+
+.success-snackbar {
+  background-color: #4caf50;
+  color: white;
+}
+
+/* Estilo específico para a tabela */
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 12px;
+    text-align: left;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+}
+
+/* Estilo consistente para todos os campos */
+.mat-form-field {
+  width: 100%;
+  
+  .mat-form-field-wrapper {
+    padding-bottom: 0;
+  }
+  
+  .mat-form-field-infix {
+    padding: 0.5em 0;
+    border-top: 0;
+  }
+  
+  .mat-input-element {
+    font-size: 14px;
+    height: 24px;
+    padding: 8px 0;
+  }
+}
+
+/* Estilo para campo de placa */
+.license-plate-input {
+  text-transform: uppercase;
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+/* Validação de nome */
+.name-input {
+  text-transform: capitalize;
+}

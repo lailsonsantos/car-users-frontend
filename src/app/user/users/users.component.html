@@ -30,16 +30,22 @@
                 <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Nome</label>
                 <mat-form-field appearance="outline" style="width: 100%;">
                   <input matInput formControlName="firstName" placeholder="Digite o nome"
-                    style="padding: 14px 0; font-size: 16px; height: 48px;">
+                    (input)="validateName($event, 'firstName')" class="name-input">
                   <mat-icon matPrefix style="margin-right: 8px; color: #666;">badge</mat-icon>
+                  <mat-error *ngIf="userForm.get('firstName')?.invalid">
+                    {{ formErrors['firstName'] || 'Nome é obrigatório' }}
+                  </mat-error>
                 </mat-form-field>
               </div>
               <div>
                 <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Sobrenome</label>
                 <mat-form-field appearance="outline" style="width: 100%;">
                   <input matInput formControlName="lastName" placeholder="Digite o sobrenome"
-                    style="padding: 14px 0; font-size: 16px; height: 48px;">
+                    (input)="validateName($event, 'lastName')" class="name-input">
                   <mat-icon matPrefix style="margin-right: 8px; color: #666;">badge</mat-icon>
+                  <mat-error *ngIf="userForm.get('lastName')?.invalid">
+                    {{ formErrors['lastName'] || 'Sobrenome é obrigatório' }}
+                  </mat-error>
                 </mat-form-field>
               </div>
             </div>
@@ -48,9 +54,11 @@
             <div style="margin-bottom: 1.5rem;">
               <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Email</label>
               <mat-form-field appearance="outline" style="width: 100%;">
-                <input matInput formControlName="email" placeholder="Digite o email" type="email"
-                  style="padding: 14px 0; font-size: 16px; height: 48px;">
+                <input matInput formControlName="email" placeholder="Digite o email" type="email">
                 <mat-icon matPrefix style="margin-right: 8px; color: #666;">email</mat-icon>
+                <mat-error *ngIf="userForm.get('email')?.invalid">
+                  {{ formErrors['email'] || 'Email inválido' }}
+                </mat-error>
               </mat-form-field>
             </div>
 
@@ -59,9 +67,11 @@
               <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Data de
                 Nascimento</label>
               <mat-form-field appearance="outline" style="width: 100%;">
-                <input matInput formControlName="birthday" type="date"
-                  style="padding: 14px 0; font-size: 16px; height: 48px;">
+                <input matInput formControlName="birthday" type="date">
                 <mat-icon matPrefix style="margin-right: 8px; color: #666;">cake</mat-icon>
+                <mat-error *ngIf="userForm.get('birthday')?.invalid">
+                  {{ formErrors['birthday'] || 'Data de nascimento é obrigatória' }}
+                </mat-error>
               </mat-form-field>
             </div>
 
@@ -70,17 +80,21 @@
               <div>
                 <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Login</label>
                 <mat-form-field appearance="outline" style="width: 100%;">
-                  <input matInput formControlName="login" placeholder="Digite o login"
-                    style="padding: 14px 0; font-size: 16px; height: 48px;" [readonly]="isEditing">
+                  <input matInput formControlName="login" placeholder="Digite o login" [readonly]="isEditing">
                   <mat-icon matPrefix style="margin-right: 8px; color: #666;">person</mat-icon>
+                  <mat-error *ngIf="userForm.get('login')?.invalid">
+                    {{ formErrors['login'] || 'Login é obrigatório' }}
+                  </mat-error>
                 </mat-form-field>
               </div>
               <div>
                 <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Senha</label>
                 <mat-form-field appearance="outline" style="width: 100%;">
-                  <input matInput type="password" formControlName="password" placeholder="Digite a senha"
-                    style="padding: 14px 0; font-size: 16px; height: 48px;" [readonly]="isEditing">
+                  <input matInput type="password" formControlName="password" placeholder="Digite a senha" [readonly]="isEditing">
                   <mat-icon matPrefix style="margin-right: 8px; color: #666;">lock</mat-icon>
+                  <mat-error *ngIf="userForm.get('password')?.invalid">
+                    {{ formErrors['password'] || 'Senha deve ter no mínimo 6 caracteres' }}
+                  </mat-error>
                 </mat-form-field>
               </div>
             </div>
@@ -90,9 +104,11 @@
               <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Telefone
                 (Opcional)</label>
               <mat-form-field appearance="outline" style="width: 100%;">
-                <input matInput formControlName="phone" placeholder="Digite o telefone"
-                  style="padding: 14px 0; font-size: 16px; height: 48px;">
+                <input matInput formControlName="phone" placeholder="Digite o telefone">
                 <mat-icon matPrefix style="margin-right: 8px; color: #666;">phone</mat-icon>
+                <mat-error *ngIf="userForm.get('phone')?.invalid">
+                  {{ formErrors['phone'] || 'Telefone inválido' }}
+                </mat-error>
               </mat-form-field>
             </div>
 
@@ -116,8 +132,8 @@
                     <span *ngIf="getSafeControl(carGroup, 'year').hasError('required')">
                       Ano é obrigatório
                     </span>
-                    <span *ngIf="getSafeControl(carGroup, 'year').hasError('min') ||
-                                 getSafeControl(carGroup, 'year').hasError('max')">
+                    <span
+                      *ngIf="getSafeControl(carGroup, 'year').hasError('min') || getSafeControl(carGroup, 'year').hasError('max')">
                       Deve ser entre 1900 e {{ currentYear }}
                     </span>
                   </mat-error>
@@ -127,7 +143,9 @@
               <!-- Placa -->
               <div style="margin-bottom: 1rem;">
                 <mat-form-field appearance="outline" style="width: 100%;">
-                  <input matInput [formControl]="getSafeControl(carGroup, 'licensePlate')" placeholder="Ex: ABC1D23" />
+                  <input matInput [formControl]="getSafeControl(carGroup, 'licensePlate')" placeholder="Ex: ABC1D23"
+                    (input)="formatLicensePlate($event, getSafeControl(carGroup, 'licensePlate'))"
+                    style="text-transform: uppercase">
                   <mat-icon matPrefix style="margin-right: 8px; color: #666;">confirmation_number</mat-icon>
                   <mat-error *ngIf="getSafeControl(carGroup, 'licensePlate').invalid">
                     <span *ngIf="getSafeControl(carGroup, 'licensePlate').hasError('required')">
@@ -232,7 +250,6 @@
             </table>
           </div>
         </div>
-
       </div>
     </div>
   </mat-card>

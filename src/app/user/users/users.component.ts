@@ -62,6 +62,7 @@ export class UsersComponent implements OnInit {
   selectedUserPhoto: File | null = null;
   carFiles: File[] = [];
   previewPhotoUrl: string | null = null;
+  formErrors: { [key: string]: string } = {};
 
   constructor(
     private fb: FormBuilder,
@@ -71,8 +72,8 @@ export class UsersComponent implements OnInit {
     private carService: CarService
   ) {
     this.userForm = this.fb.group<UserForm>({
-      firstName: this.fb.control('', Validators.required),
-      lastName: this.fb.control('', Validators.required),
+      firstName: this.fb.control('', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\s']*$/)]),
+      lastName: this.fb.control('', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\s']*$/)]),
       email: this.fb.control('', [Validators.required, Validators.email]),
       birthday: this.fb.control('', Validators.required),
       login: this.fb.control('', Validators.required),
@@ -80,6 +81,15 @@ export class UsersComponent implements OnInit {
       phone: this.fb.control(''),
       cars: this.fb.array<FormGroup<CarForm>>([])
     });
+  }
+
+  validateName(event: any, controlName: string): void {
+    const control = this.userForm.get(controlName);
+    if (control) {
+      let value = event.target.value;
+      value = value.replace(/[^a-zA-ZÀ-ÿ\s']/g, '');
+      control.setValue(value, { emitEvent: false });
+    }
   }
 
   ngOnInit(): void {
@@ -92,6 +102,12 @@ export class UsersComponent implements OnInit {
 
   get isEditing(): boolean {
     return this.editingUserId !== null;
+  }
+
+  formatLicensePlate(event: any, control: AbstractControl): void {
+    let value = event.target.value.toUpperCase();
+    value = value.replace(/[^A-Z0-9]/g, '');
+    control.setValue(value);
   }
 
   createCarFormGroup(carData?: Partial<Car>): FormGroup<CarForm> {
@@ -211,6 +227,7 @@ export class UsersComponent implements OnInit {
       });
     } else {
       this.markFormGroupTouched(this.userForm);
+      this.showError('Por favor, corrija os erros no formulário');
     }
   }
 
@@ -296,7 +313,13 @@ export class UsersComponent implements OnInit {
           this.resetForm();
           this.showSuccess('Usuário atualizado com sucesso');
         },
-        error: () => this.showError('Erro ao atualizar usuário')
+        error: (err) => {
+          this.showError(err.message || 'Erro ao atualizar usuário');
+          // Marcar campos inválidos se houver detalhes no erro
+          if (err.error?.errors) {
+            this.handleBackendErrors(err.error.errors);
+          }
+        }
       });
     } else {
       this.markFormGroupTouched(this.userForm);
@@ -332,25 +355,8 @@ export class UsersComponent implements OnInit {
     this.router.navigate(['/api/cars'], { state: { user: user } });
   }
 
-  private markFormGroupTouched(formGroup: AbstractControl): void {
-    formGroup.markAsTouched();
-
-    if (formGroup instanceof FormGroup || formGroup instanceof FormArray) {
-      Object.values(formGroup.controls).forEach(control => {
-        this.markFormGroupTouched(control);
-      });
-    }
-  }
-
   private showSuccess(message: string): void {
     this.snackBar.open(message, 'Fechar', { duration: 3000 });
-  }
-
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Fechar', {
-      duration: 3000,
-      panelClass: ['error-snackbar']
-    });
   }
 
   getSafeControl(carGroup: AbstractControl, controlName: string): FormControl {
@@ -371,6 +377,55 @@ export class UsersComponent implements OnInit {
     if (event.target.files && event.target.files.length > 0) {
       this.carFiles[index] = event.target.files[0];
     }
+  }
+
+  private markFormGroupTouched(formGroup: AbstractControl): void {
+    formGroup.markAsTouched();
+
+    if (formGroup instanceof FormGroup || formGroup instanceof FormArray) {
+      Object.keys(formGroup.controls).forEach(key => {
+        const control = formGroup.get(key);
+        if (control?.invalid) {
+          this.formErrors[key] = this.getErrorMessage(control, key);
+        }
+        this.markFormGroupTouched(control!);
+      });
+    }
+  }
+
+  private getErrorMessage(control: AbstractControl, fieldName: string): string {
+    if (control.hasError('required')) {
+      return 'Campo obrigatório';
+    } else if (control.hasError('email')) {
+      return 'Email inválido';
+    } else if (control.hasError('minlength')) {
+      return `Mínimo ${control.errors?.['minlength'].requiredLength} caracteres`;
+    } else if (control.hasError('pattern')) {
+      if (fieldName === 'licensePlate') {
+        return 'Formato: ABC1D23';
+      }
+      return 'Formato inválido';
+    } else if (control.hasError('min') || control.hasError('max')) {
+      return `Deve ser entre 1900 e ${this.currentYear}`;
+    }
+    return 'Valor inválido';
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Fechar', {
+      duration: 5000,
+      panelClass: ['error-snackbar']
+    });
+  }
+
+  private handleBackendErrors(errors: any): void {
+    Object.keys(errors).forEach(key => {
+      const control = this.userForm.get(key);
+      if (control) {
+        control.setErrors({ backendError: true });
+        this.formErrors[key] = errors[key];
+      }
+    });
   }
 
 }

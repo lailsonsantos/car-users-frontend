@@ -35,6 +35,7 @@ export class CarsComponent implements OnInit {
   selectedCarPhoto: File | null = null;
   previewPhotoUrl: string | null = null;
   currentYear = new Date().getFullYear();
+  formErrors: { [key: string]: string } = {};
 
   constructor(
     private fb: FormBuilder,
@@ -50,7 +51,16 @@ export class CarsComponent implements OnInit {
       color: ['', Validators.required]
     });
   }
-
+  
+  formatLicensePlate(event: any): void {
+    const control = this.carForm.get('licensePlate');
+    if (control) {
+      let value = event.target.value.toUpperCase();
+      value = value.replace(/[^A-Z0-9]/g, '');
+      control.setValue(value, { emitEvent: false });
+    }
+  }
+  
   ngOnInit() {
     const navigation = this.router.getCurrentNavigation();
     const stateUser = navigation?.extras?.state?.['user'];
@@ -92,36 +102,54 @@ export class CarsComponent implements OnInit {
 
   onSubmit(): void {
     if (this.carForm.valid) {
-      const carData: Car = {
-        year: this.carForm.value.year,
-        licensePlate: this.carForm.value.licensePlate,
-        model: this.carForm.value.model,
-        color: this.carForm.value.color
-      };
-  
-      const carObservable = this.editingCarId
-        ? this.carService.updateCar(this.editingCarId, carData)
-        : this.carService.createCar(carData, this.currentUserId);
-  
-      carObservable.subscribe({
+      const carData: Car = this.carForm.value;
+      
+      this.carService.createCar(carData, this.currentUserId).subscribe({
         next: (car) => {
           if (this.selectedCarPhoto && car.id) {
-            this.carService.uploadCarPhoto(car.id, this.selectedCarPhoto).subscribe({
-              next: () => {
-                this.loadCars(this.currentUserId);
-                this.showSuccess('Foto do carro enviada com sucesso');
-              },
-              error: (err) => this.showError('Erro ao enviar foto do carro')
-            });
+            this.uploadCarPhoto(car.id);
+          } else {
+            this.resetForm();
+            this.showSuccess('Carro criado com sucesso');
           }
-  
-          this.resetForm();
-          this.showSuccess(this.editingCarId ? 'Carro atualizado com sucesso' : 'Carro criado com sucesso');
         },
-        error: () => this.showError(this.editingCarId ? 'Erro ao atualizar carro' : 'Erro ao criar carro')
+        error: (err) => {
+          this.showError(err.message || 'Erro ao criar carro');
+          if (err.error?.errors) {
+            this.handleBackendErrors(err.error.errors);
+          }
+        }
       });
     } else {
       this.markFormGroupTouched(this.carForm);
+      this.showError('Por favor, corrija os erros no formulário');
+    }
+  }
+
+  private uploadCarPhoto(carId: number): void {
+    if (!this.selectedCarPhoto) return;
+    
+    this.carService.uploadCarPhoto(carId, this.selectedCarPhoto).subscribe({
+      next: () => {
+        this.resetForm();
+        this.showSuccess('Carro e foto salvos com sucesso');
+      },
+      error: (err) => {
+        this.showError(err.message || 'Erro ao enviar foto do carro');
+      }
+    });
+  }
+
+  private markFormGroupTouched(formGroup: AbstractControl): void {
+    formGroup.markAsTouched();
+
+    if (formGroup instanceof FormGroup) {
+      Object.keys(formGroup.controls).forEach(key => {
+        const control = formGroup.get(key);
+        if (control?.invalid) {
+          this.formErrors[key] = this.getErrorMessage(control, key);
+        }
+      });
     }
   }
 
@@ -210,16 +238,6 @@ export class CarsComponent implements OnInit {
     }
   }
 
-  private markFormGroupTouched(formGroup: AbstractControl): void {
-    formGroup.markAsTouched();
-
-    if (formGroup instanceof FormGroup) {
-      Object.values(formGroup.controls).forEach(control => {
-        this.markFormGroupTouched(control);
-      });
-    }
-  }
-
   private showSuccess(message: string): void {
     this.snackBar.open(message, 'Fechar', { duration: 3000 });
   }
@@ -238,4 +256,29 @@ export class CarsComponent implements OnInit {
     }
     return control;
   }
+
+  private getErrorMessage(control: AbstractControl, fieldName: string): string {
+    if (control.hasError('required')) {
+      return 'Campo obrigatório';
+    } else if (control.hasError('pattern')) {
+      if (fieldName === 'licensePlate') {
+        return 'Formato: ABC1D23';
+      }
+      return 'Formato inválido';
+    } else if (control.hasError('min') || control.hasError('max')) {
+      return `Ano deve ser entre 1900 e ${new Date().getFullYear()}`;
+    }
+    return 'Valor inválido';
+  }
+
+  private handleBackendErrors(errors: any): void {
+    Object.keys(errors).forEach(key => {
+      const control = this.carForm.get(key);
+      if (control) {
+        control.setErrors({ backendError: true });
+        this.formErrors[key] = errors[key];
+      }
+    });
+  }
+  
 }

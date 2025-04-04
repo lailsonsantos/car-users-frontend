@@ -2,15 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Car } from '../models/car.model';
-import { AuthService } from '../../auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class CarService {
   private baseUrl = '/api/cars';
 
   constructor(
-    private http: HttpClient,
-    private authService: AuthService
+    private http: HttpClient
   ) {}
 
   getAllCars(userId?: number): Observable<Car[]> {
@@ -18,9 +16,9 @@ export class CarService {
     return this.http.get<Car[]>(url);
   }
 
-  getById(id: number): Observable<Car> {
-    return this.http.get<Car>(`${this.baseUrl}/${id}`);
-  }
+  getById(id: number, userId: number): Observable<Car> {
+    return this.http.get<Car>(`${this.baseUrl}/${id}?userId=${userId}`);
+  }  
 
   createCar(car: Car, userId?: number): Observable<Car> {
     if (userId) {
@@ -29,22 +27,18 @@ export class CarService {
     return this.http.post<Car>(this.baseUrl, car);
   }
 
-  updateCar(id: number, car: Car): Observable<Car> {
-    return this.http.put<Car>(`${this.baseUrl}/${id}`, car);
+  updateCar(id: number, car: Car, userId: number): Observable<Car> {
+    return this.http.put<Car>(`${this.baseUrl}/${id}?userId=${userId}`, car);
   }
-
-  deleteCar(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
-  }
+  
+  deleteCar(id: number, userId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}?userId=${userId}`);
+  }  
 
   getCarPhoto(carId: number): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${carId}/photo`, {
       responseType: 'blob'
     });
-  }
-
-  getCarPhotoUrl(carId: number): string {
-    return `${this.baseUrl}/${carId}/photo`;
   }
 
   uploadCarPhoto(carId: number, file: File): Observable<any> {

@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../auth.service';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -33,10 +33,6 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router
   ) {
-    if (localStorage.getItem('token')) {
-      this.router.navigate(['/api/users']);
-    }
-    
     this.loginForm = this.fb.group({
       login: ['', Validators.required],
       password: ['', Validators.required]
@@ -46,9 +42,14 @@ export class LoginComponent {
   onSubmit() {
     if (this.loginForm.valid) {
       this.authService.login(this.loginForm.value).subscribe({
-        next: (response) => {
-          localStorage.setItem('token', response.token);
-          this.router.navigate(['/api/users']);
+        next: () => {
+          const redirectUrl = localStorage.getItem('redirectUrl');
+          if (redirectUrl) {
+            localStorage.removeItem('redirectUrl');
+            this.router.navigate([redirectUrl]);
+          } else {
+            this.router.navigate(['/api/me']);
+          }
         },
         error: () => {
           this.errorMessage = 'Credenciais inválidas.';
@@ -56,4 +57,5 @@ export class LoginComponent {
       });
     }
   }
+  
 }

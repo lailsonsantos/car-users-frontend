@@ -6,7 +6,8 @@ import {
   FormArray,
   AbstractControl,
   FormControl,
-  ReactiveFormsModule
+  ReactiveFormsModule,
+  FormsModule
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -22,6 +23,7 @@ import { Router } from '@angular/router';
 import { CarService } from '../../core/services/car.service';
 
 interface CarForm {
+  id: FormControl<number | null>;
   year: FormControl<number | null>;
   licensePlate: FormControl<string | null>;
   model: FormControl<string | null>;
@@ -36,6 +38,7 @@ interface UserForm {
   login: FormControl<string | null>;
   password: FormControl<string | null>;
   phone: FormControl<string | null>;
+  photoUrl: FormControl<string | null>;
   cars: FormArray<FormGroup<CarForm>>;
 }
 
@@ -45,6 +48,7 @@ interface UserForm {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatCardModule,
     MatIconModule,
     MatInputModule,
@@ -63,6 +67,8 @@ export class UsersComponent implements OnInit {
   carFiles: File[] = [];
   previewPhotoUrl: string | null = null;
   formErrors: { [key: string]: string } = {};
+  editingUser: User | null = null;
+  searchUserId: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -78,8 +84,14 @@ export class UsersComponent implements OnInit {
       birthday: this.fb.control('', Validators.required),
       login: this.fb.control('', Validators.required),
       password: this.fb.control('', [Validators.required, Validators.minLength(6)]),
-      phone: this.fb.control(''),
-      cars: this.fb.array<FormGroup<CarForm>>([])
+      phone: this.fb.control('', Validators.required),
+      photoUrl: this.fb.control(''),
+      cars: this.fb.array<FormGroup<CarForm>>([], (control: AbstractControl) => {
+        if (control instanceof FormArray) {
+          return control.length > 0 ? null : { atLeastOneCar: 'É obrigatório informar pelo menos um carro.' };
+        }
+        return null;
+      })
     });
   }
 
@@ -112,6 +124,7 @@ export class UsersComponent implements OnInit {
 
   createCarFormGroup(carData?: Partial<Car>): FormGroup<CarForm> {
     return this.fb.group<CarForm>({
+      id: this.fb.control(carData?.id ?? null),
       year: this.fb.control(
         carData?.year ?? null,
         [Validators.required, Validators.min(1900), Validators.max(this.currentYear)]
@@ -124,7 +137,7 @@ export class UsersComponent implements OnInit {
       color: this.fb.control(carData?.color ?? '', Validators.required)
     });
   }
-
+  
   addCar(carData?: Partial<Car>): void {
     this.carsFormArray.push(this.createCarFormGroup(carData));
   }
@@ -167,6 +180,7 @@ export class UsersComponent implements OnInit {
         }
 
         return {
+          id: carValue.id,
           year: carValue.year,
           licensePlate: carValue.licensePlate,
           model: carValue.model,
@@ -198,7 +212,7 @@ export class UsersComponent implements OnInit {
         next: (user) => {
           if (this.selectedUserPhoto && user.id) {
             this.userService.uploadUserPhoto(user.id, this.selectedUserPhoto).subscribe({
-              next: (updatedUser) => {
+              next: () => {
                 this.loadUsers();
               },
               error: (err) => console.error('Erro ao enviar foto do usuário:', err)
@@ -246,76 +260,89 @@ export class UsersComponent implements OnInit {
 
   enableEditing(user: User): void {
     this.editingUserId = user.id ?? null;
+    this.editingUser = user;
+
     this.userForm.patchValue({
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
       birthday: user.birthday,
       login: user.login,
-      phone: user.phone ?? ''
+      phone: user.phone,
+      photoUrl: ''
     });
-
-    if (user.photoUrl) {
-      this.previewPhotoUrl = user.photoUrl;
+  
+    if (this.editingUserId) {
+      this.userForm.get('password')?.clearValidators();
+      this.userForm.get('password')?.updateValueAndValidity();
     } else {
-      this.previewPhotoUrl = null;
+      this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+      this.userForm.get('password')?.updateValueAndValidity();
     }
-
+  
+    this.previewPhotoUrl = null;
+  
     this.carsFormArray.clear();
     user.cars?.forEach(car => this.addCar(car));
-  }
+  }  
 
   saveUser(userId: number): void {
     if (this.userForm.valid) {
       const formValue = this.userForm.value;
-
-      const rawCars = formValue.cars?.map(carGroup => {
-
-        const carValue = carGroup;
-
-        const isEmpty =
-          (carValue.year == null || carValue.year === 0) &&
-          (!carValue.licensePlate || carValue.licensePlate.trim() === '') &&
-          (!carValue.model || carValue.model.trim() === '') &&
-          (!carValue.color || carValue.color.trim() === '');
-
-        if (isEmpty) {
-          return null;
-        }
-
+  
+      const mappedCars = formValue.cars?.map((carFormValue: any) => {
+        const originalCar = this.editingUser?.cars?.find(c => c.id === carFormValue.id);
         return {
-          year: carValue.year,
-          licensePlate: carValue.licensePlate,
-          model: carValue.model,
-          color: carValue.color
+          id: carFormValue.id ?? undefined,
+          year: carFormValue.year,
+          licensePlate: carFormValue.licensePlate,
+          model: carFormValue.model,
+          color: carFormValue.color,
+          photoUrl: originalCar ? originalCar.photoUrl : undefined
         } as Car;
       }) ?? [];
-
-      const filteredCars = rawCars.filter((car): car is Car => car !== null);
-
-      const userData: User = {
-        id: userId,
-        firstName: formValue.firstName,
-        lastName: formValue.lastName,
-        email: formValue.email,
-        birthday: formValue.birthday,
-        login: formValue.login,
-        password: formValue.password,
-        phone: formValue.phone,
+  
+      const updatedUser: User = {
+        ...this.editingUser,
+        ...formValue,
+        cars: mappedCars
       };
-
-      if (filteredCars.length > 0) {
-        userData.cars = filteredCars;
-      }
-
-      this.userService.update(userId, userData).subscribe({
-        next: () => {
+  
+      this.userService.update(userId, updatedUser).subscribe({
+        next: (user) => {
+          if (this.selectedUserPhoto) {
+            this.userService.uploadUserPhoto(userId, this.selectedUserPhoto).subscribe({
+              next: () => {
+                this.loadUsers();
+                this.showSuccess('Usuário atualizado com foto com sucesso');
+                this.selectedUserPhoto = null;
+              },
+              error: (err) => {
+                console.error('Erro ao enviar foto do usuário:', err);
+                this.loadUsers();
+                this.showSuccess('Usuário atualizado, mas ocorreu erro no upload da foto');
+              }
+            });
+          } else {
+            this.loadUsers();
+            this.showSuccess('Usuário atualizado com sucesso');
+          }
+          
+          if (user.cars && user.cars.length > 0) {
+            user.cars.forEach((car, index) => {
+              const file = this.carFiles[index];
+              if (file && car.id) {
+                this.carService.uploadCarPhoto(car.id, file).subscribe({
+                  next: () => console.log(`Foto do carro ${car.id} enviada com sucesso.`),
+                  error: (err: any) => console.error(`Erro ao enviar foto do carro ${car.id}:`, err)
+                });
+              }
+            });
+          }
           this.resetForm();
-          this.showSuccess('Usuário atualizado com sucesso');
         },
         error: (err) => {
           this.showError(err.message || 'Erro ao atualizar usuário');
-          // Marcar campos inválidos se houver detalhes no erro
           if (err.error?.errors) {
             this.handleBackendErrors(err.error.errors);
           }
@@ -324,18 +351,16 @@ export class UsersComponent implements OnInit {
     } else {
       this.markFormGroupTouched(this.userForm);
     }
-  }
+  }    
 
   deleteUser(user: User): void {
-    if (confirm(`Tem certeza que deseja excluir ${user.firstName} ${user.lastName}?`)) {
-      this.userService.delete(user.id!).subscribe({
-        next: () => {
-          this.loadUsers();
-          this.showSuccess('Usuário excluído com sucesso');
-        },
-        error: () => this.showError('Erro ao excluir usuário')
-      });
-    }
+    this.userService.delete(user.id!).subscribe({
+      next: () => {
+        this.loadUsers();
+        this.showSuccess('Usuário excluído com sucesso');
+      },
+      error: () => this.showError('Erro ao excluir usuário')
+    });
   }
 
   cancelEdit(): void {
@@ -352,8 +377,13 @@ export class UsersComponent implements OnInit {
   }
 
   viewUserCars(user: User): void {
-    this.router.navigate(['/api/cars'], { state: { user: user } });
-  }
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    
+    localStorage.setItem('redirectUrl', '/api/cars');
+    
+    this.router.navigate(['/api/signin']);
+  }  
 
   private showSuccess(message: string): void {
     this.snackBar.open(message, 'Fechar', { duration: 3000 });
@@ -426,6 +456,31 @@ export class UsersComponent implements OnInit {
         this.formErrors[key] = errors[key];
       }
     });
+  }
+
+  searchUser(): void {
+    if (this.searchUserId && this.searchUserId !== '') {
+      const id = Number(this.searchUserId);
+      this.userService.getById(id).subscribe({
+        next: (user) => {
+          this.users = [user];
+          if (user.photoUrl) {
+            this.userService.getPhoto(user.id!).subscribe(blob => {
+              const reader = new FileReader();
+              reader.onload = (e: any) => {
+                user.photoUrl = e.target.result;
+              };
+              reader.readAsDataURL(blob);
+            });
+          }
+        },
+        error: (err) => {
+          this.showError(err);
+        }
+      });
+    } else {
+      this.loadUsers();
+    }
   }
 
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,6 +18,7 @@ import { Car } from '../../core/models/car.model';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatCardModule,
     MatIconModule,
     MatInputModule,
@@ -31,11 +32,13 @@ export class CarsComponent implements OnInit {
   carForm: FormGroup;
   cars: Car[] = [];
   editingCarId: number | null = null;
+  editingCar: Car | null = null;
   currentUserId: any;
   selectedCarPhoto: File | null = null;
   previewPhotoUrl: string | null = null;
   currentYear = new Date().getFullYear();
   formErrors: { [key: string]: string } = {};
+  searchCarId: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -60,7 +63,7 @@ export class CarsComponent implements OnInit {
       control.setValue(value, { emitEvent: false });
     }
   }
-  
+
   ngOnInit() {
     const navigation = this.router.getCurrentNavigation();
     const stateUser = navigation?.extras?.state?.['user'];
@@ -114,12 +117,12 @@ export class CarsComponent implements OnInit {
           }
         },
         error: (err) => {
-          this.showError(err.message || 'Erro ao criar carro');
+          this.showError(err);
           if (err.error?.errors) {
             this.handleBackendErrors(err.error.errors);
           }
         }
-      });
+      });      
     } else {
       this.markFormGroupTouched(this.carForm);
       this.showError('Por favor, corrija os erros no formulário');
@@ -155,22 +158,20 @@ export class CarsComponent implements OnInit {
 
   enableEditing(car: Car): void {
     this.editingCarId = car.id ?? null;
+    this.editingCar = car;
+
     this.carForm.patchValue({
       year: car.year,
       licensePlate: car.licensePlate,
       model: car.model,
       color: car.color
     });
-
-    if (car.photoUrl) {
-      this.previewPhotoUrl = car.photoUrl;
-    } else {
-      this.previewPhotoUrl = null;
-    }
+    
+    this.previewPhotoUrl = null;
+    this.selectedCarPhoto = null;
   }
 
   saveCar(carId: number): void {
-    debugger
     if (this.carForm.valid) {
       const carData: Car = {
         id: carId,
@@ -179,8 +180,8 @@ export class CarsComponent implements OnInit {
         model: this.carForm.value.model,
         color: this.carForm.value.color
       };
-
-      this.carService.updateCar(carId, carData).subscribe({
+  
+      this.carService.updateCar(carId, carData, this.currentUserId).subscribe({
         next: () => {
           if (this.selectedCarPhoto) {
             this.carService.uploadCarPhoto(carId, this.selectedCarPhoto).subscribe({
@@ -188,7 +189,7 @@ export class CarsComponent implements OnInit {
                 this.loadCars(this.currentUserId);
                 this.showSuccess('Foto do carro atualizada com sucesso');
               },
-              error: (err) => this.showError('Erro ao atualizar foto do carro')
+              error: (err) => this.showError(err.message || 'Erro ao atualizar foto do carro')
             });
           }
           this.resetForm();
@@ -199,19 +200,17 @@ export class CarsComponent implements OnInit {
     } else {
       this.markFormGroupTouched(this.carForm);
     }
-  }
+  }  
 
   deleteCar(car: Car): void {
-    if (confirm(`Tem certeza que deseja excluir o carro ${car.model}?`)) {
-      this.carService.deleteCar(car.id!).subscribe({
-        next: () => {
-          this.loadCars(this.currentUserId);
-          this.showSuccess('Carro excluído com sucesso');
-        },
-        error: () => this.showError('Erro ao excluir carro')
-      });
-    }
-  }
+    this.carService.deleteCar(car.id!, this.currentUserId).subscribe({
+      next: () => {
+        this.loadCars(this.currentUserId);
+        this.showSuccess('Carro excluído com sucesso');
+      },
+      error: () => this.showError('Erro ao excluir carro')
+    });
+  }  
 
   cancelEdit(): void {
     this.resetForm();
@@ -242,7 +241,8 @@ export class CarsComponent implements OnInit {
     this.snackBar.open(message, 'Fechar', { duration: 3000 });
   }
 
-  private showError(message: string): void {
+  private showError(error: any): void {
+    const message = error?.error?.message || error?.message || 'Erro desconhecido';
     this.snackBar.open(message, 'Fechar', {
       duration: 3000,
       panelClass: ['error-snackbar']
@@ -279,6 +279,22 @@ export class CarsComponent implements OnInit {
         this.formErrors[key] = errors[key];
       }
     });
+  }
+  
+  searchCar(): void {
+    if (this.searchCarId && this.searchCarId.trim() !== '') {
+      const carId = Number(this.searchCarId);
+      this.carService.getById(carId, this.currentUserId).subscribe({
+        next: (car) => {
+          this.cars = [car];
+        },
+        error: (err) => {
+          this.showError(err);
+        }
+      });
+    } else {
+      this.loadCars(this.currentUserId);
+    }
   }
   
 }

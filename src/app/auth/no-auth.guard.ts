@@ -5,9 +5,9 @@ export const noAuthGuard: CanActivateFn = () => {
   const token = localStorage.getItem('token');
   const router = inject(Router);
 
-  if (token) {
-    router.navigate(['/api/users']);
-    return false;
+  if (!token) {
+    router.navigate(['/api/signin']);
+    return true;
   }
-  return true;
+  return false;
 };

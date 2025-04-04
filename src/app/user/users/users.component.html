@@ -80,7 +80,7 @@
               <div>
                 <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Login</label>
                 <mat-form-field appearance="outline" style="width: 100%;">
-                  <input matInput formControlName="login" placeholder="Digite o login" [readonly]="isEditing">
+                  <input matInput formControlName="login" placeholder="Digite o login">
                   <mat-icon matPrefix style="margin-right: 8px; color: #666;">person</mat-icon>
                   <mat-error *ngIf="userForm.get('login')?.invalid">
                     {{ formErrors['login'] || 'Login é obrigatório' }}
@@ -90,9 +90,10 @@
               <div>
                 <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Senha</label>
                 <mat-form-field appearance="outline" style="width: 100%;">
-                  <input matInput type="password" formControlName="password" placeholder="Digite a senha" [readonly]="isEditing">
+                  <input matInput type="password" formControlName="password" placeholder="Digite a senha"
+                    [required]="!isEditing">
                   <mat-icon matPrefix style="margin-right: 8px; color: #666;">lock</mat-icon>
-                  <mat-error *ngIf="userForm.get('password')?.invalid">
+                  <mat-error *ngIf="userForm.get('password')?.invalid && !isEditing">
                     {{ formErrors['password'] || 'Senha deve ter no mínimo 6 caracteres' }}
                   </mat-error>
                 </mat-form-field>
@@ -101,15 +102,22 @@
 
             <!-- Telefone -->
             <div style="margin-bottom: 2rem;">
-              <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Telefone
-                (Opcional)</label>
+              <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Telefone</label>
               <mat-form-field appearance="outline" style="width: 100%;">
                 <input matInput formControlName="phone" placeholder="Digite o telefone">
                 <mat-icon matPrefix style="margin-right: 8px; color: #666;">phone</mat-icon>
                 <mat-error *ngIf="userForm.get('phone')?.invalid">
                   {{ formErrors['phone'] || 'Telefone inválido' }}
                 </mat-error>
+                <mat-error *ngIf="userForm.get('phone')?.invalid">
+                  {{ formErrors['phone'] || 'Telefone é obrigatório' }}
+                </mat-error>
               </mat-form-field>
+            </div>
+
+            <!-- Mostra mensagem que o carro é obrigatório -->
+            <div *ngIf="userForm.get('cars')?.errors?.['atLeastOneCar']" style="color: red; margin-bottom: 10px;">
+              {{ userForm.get('cars')?.errors?.['atLeastOneCar'] }}
             </div>
 
             <!-- Seção de Carros -->
@@ -121,7 +129,6 @@
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
-
               <!-- Ano -->
               <div style="margin-bottom: 1rem;">
                 <mat-form-field appearance="outline" style="width: 100%;">
@@ -212,8 +219,17 @@
           </form>
         </div>
 
-        <!-- Lista de Usuários -->
+        
         <div>
+          <!-- Campo de Consulta e Botão de Busca -->
+          <div style="margin-bottom: 20px; display: flex; align-items: center;">
+            <mat-form-field appearance="outline" style="flex: 1; margin-right: 8px;">
+              <input matInput placeholder="Buscar usuário pelo ID" [(ngModel)]="searchUserId" type="number">
+            </mat-form-field>
+            <button mat-raised-button color="primary" (click)="searchUser()">Buscar</button>
+          </div>
+
+          <!-- Lista de Usuários -->
           <h2 style="color: #3f51b5; margin-bottom: 1.5rem; font-weight: 500;">Lista de Usuários</h2>
           <div style="overflow-x: auto;">
             <table

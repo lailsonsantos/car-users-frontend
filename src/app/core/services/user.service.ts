@@ -44,17 +44,14 @@ export class UserService {
   }
 
   getMe(): Observable<User> {
-    return this.http.get<User>('/api/me');
+    const userId = localStorage.getItem('userId');
+    return this.http.get<User>(`/api/me?userId=${userId}`);
   }
 
   getPhoto(userId: number): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${userId}/photo`, {
       responseType: 'blob'
     });
-  }
-
-  getPhotoUrl(userId: number): string {
-    return `${this.baseUrl}/${userId}/photo`;
   }
 
   uploadUserPhoto(userId: number, file: File): Observable<User> {

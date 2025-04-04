@@ -4,6 +4,7 @@ import { UserService } from '../core/services/user.service';
 import { User } from '../core/models/user.model';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-me',
@@ -18,7 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
 export class MeComponent implements OnInit {
   user?: User;
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService, private router: Router) {}
 
   ngOnInit() {
     this.userService.getMe().subscribe({
@@ -29,5 +30,10 @@ export class MeComponent implements OnInit {
         console.error('Erro ao buscar /api/me:', err);
       }
     });
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/api/signin']);
   }
 }

@@ -10,7 +10,7 @@
             <h2 style="margin: 1rem 0; color: #3f51b5; font-weight: 500;">Gerenciar Carros</h2>
           </div>
 
-          <form [formGroup]="carForm" (ngSubmit)="editingCarId ? onSubmit() : onSubmit()">
+          <form [formGroup]="carForm" (ngSubmit)="editingCarId ? saveCar(editingCarId) : onSubmit()">
             <!-- Foto do carro -->
             <div style="margin-bottom: 1.5rem;">
               <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Foto do Carro</label>
@@ -91,8 +91,17 @@
           </form>
         </div>
 
-        <!-- Lista de Carros -->
+
         <div>
+          <!-- Campo de Consulta de Carro -->
+          <div style="margin-bottom: 20px; display: flex; align-items: center;">
+            <mat-form-field appearance="outline" style="flex: 1; margin-right: 8px;">
+              <input matInput placeholder="Buscar carro pelo ID" [(ngModel)]="searchCarId" type="number">
+            </mat-form-field>
+            <button mat-raised-button color="primary" (click)="searchCar()">Buscar</button>
+          </div>
+
+          <!-- Lista de Carros -->
           <h2 style="color: #3f51b5; margin-bottom: 1.5rem; font-weight: 500;">Lista de Carros</h2>
           <div style="overflow-x: auto;">
             <table

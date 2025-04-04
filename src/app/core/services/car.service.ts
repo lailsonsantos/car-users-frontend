@@ -22,7 +22,10 @@ export class CarService {
     return this.http.get<Car>(`${this.baseUrl}/${id}`);
   }
 
-  createCar(car: Car): Observable<Car> {
+  createCar(car: Car, userId?: number): Observable<Car> {
+    if (userId) {
+      return this.http.post<Car>(`${this.baseUrl}?userId=${userId}`, car);
+    }
     return this.http.post<Car>(this.baseUrl, car);
   }
 
@@ -34,9 +37,20 @@ export class CarService {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
+  getCarPhoto(carId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${carId}/photo`, {
+      responseType: 'blob'
+    });
+  }
+
+  getCarPhotoUrl(carId: number): string {
+    return `${this.baseUrl}/${carId}/photo`;
+  }
+
   uploadCarPhoto(carId: number, file: File): Observable<any> {
-      const formData = new FormData();
-      formData.append('file', file);
-      return this.http.post(`${this.baseUrl}/${carId}/photo`, formData);
-    }
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(`${this.baseUrl}/${carId}/photo`, formData);
+  }
+  
 }

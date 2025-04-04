@@ -32,4 +32,21 @@ export class UserService {
   getMe(): Observable<User> {
     return this.http.get<User>('/api/me');
   }
+
+  getPhoto(userId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${userId}/photo`, {
+      responseType: 'blob'
+    });
+  }
+
+  getPhotoUrl(userId: number): string {
+    return `${this.baseUrl}/${userId}/photo`;
+  }
+
+  uploadUserPhoto(userId: number, file: File): Observable<User> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<User>(`${this.baseUrl}/${userId}/photo`, formData);
+  }
+
 }

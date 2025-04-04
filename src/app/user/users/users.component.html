@@ -11,6 +11,19 @@
           </div>
 
           <form [formGroup]="userForm" (ngSubmit)="editingUserId ? saveUser(editingUserId) : onSubmit()">
+            <!-- Foto do usuário -->
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Foto do Usuário</label>
+
+              <!-- Preview da foto -->
+              <div *ngIf="previewPhotoUrl" style="margin-bottom: 1rem;">
+                <img [src]="previewPhotoUrl" alt="Preview da foto"
+                  style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; border: 1px solid #ddd;">
+              </div>
+
+              <input type="file" accept="image/*" (change)="onUserPhotoSelected($event)" />
+            </div>
+
             <!-- Nome e Sobrenome -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
               <div>
@@ -148,6 +161,12 @@
                   </mat-error>
                 </mat-form-field>
               </div>
+
+              <!-- Upload da foto do carro -->
+              <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Foto do Carro</label>
+                <input type="file" (change)="onCarFileSelected($event, i)" />
+              </div>
             </mat-card>
 
             <!-- Botão para adicionar mais Carros -->
@@ -192,10 +211,8 @@
               <tbody>
                 <tr *ngFor="let user of users" style="border-bottom: 1px solid #e0e0e0;">
                   <td style="padding: 12px;">
-                    <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Foto"
-                      style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
-                    <input type="file" (change)="onUserPhotoSelected($event, user.id)"
-                      style="display: block; margin-top: 8px;" />
+                    <img *ngIf="user.photoUrl" [src]="user.photoUrl" alt="Miniatura do Usuário"
+                      style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
                   </td>
                   <td style="padding: 12px;">{{ user.firstName }} {{ user.lastName }}</td>
                   <td style="padding: 12px;">{{ user.email }}</td>

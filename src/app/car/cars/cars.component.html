@@ -1,5 +1,7 @@
-<div style="background-color: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
-  <mat-card class="mat-elevation-z8" style="width: 100%; max-width: 1200px; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
+<div
+  style="background-color: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
+  <mat-card class="mat-elevation-z8"
+    style="width: 100%; max-width: 1200px; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
     <div style="background-color: white; padding: 2.5rem;">
       <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
         <!-- Formulário de Cadastro -->
@@ -10,12 +12,25 @@
           </div>
 
           <form [formGroup]="carForm" (ngSubmit)="onSubmit()">
+            <!-- Foto do carro -->
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Foto do Carro</label>
+              
+              <!-- Preview da foto -->
+              <div *ngIf="previewPhotoUrl" style="margin-bottom: 1rem;">
+                <img [src]="previewPhotoUrl" alt="Preview da foto" 
+                     style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+              </div>
+              
+              <input type="file" accept="image/*" (change)="onCarPhotoSelected($event)" />
+            </div>
+
             <!-- Ano -->
             <div style="margin-bottom: 1.5rem;">
               <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Ano</label>
               <mat-form-field appearance="outline" style="width: 100%;">
                 <input matInput formControlName="year" placeholder="Ex: 2023" type="number"
-                      style="padding: 14px 0; font-size: 16px; height: 48px;">
+                  style="padding: 14px 0; font-size: 16px; height: 48px;">
                 <mat-icon matPrefix style="margin-right: 8px; color: #666;">calendar_today</mat-icon>
               </mat-form-field>
             </div>
@@ -25,7 +40,7 @@
               <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Placa</label>
               <mat-form-field appearance="outline" style="width: 100%;">
                 <input matInput formControlName="licensePlate" placeholder="Ex: ABC1D23"
-                      style="padding: 14px 0; font-size: 16px; height: 48px;">
+                  style="padding: 14px 0; font-size: 16px; height: 48px;">
                 <mat-icon matPrefix style="margin-right: 8px; color: #666;">confirmation_number</mat-icon>
               </mat-form-field>
             </div>
@@ -35,7 +50,7 @@
               <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Modelo</label>
               <mat-form-field appearance="outline" style="width: 100%;">
                 <input matInput formControlName="model" placeholder="Ex: Onix"
-                      style="padding: 14px 0; font-size: 16px; height: 48px;">
+                  style="padding: 14px 0; font-size: 16px; height: 48px;">
                 <mat-icon matPrefix style="margin-right: 8px; color: #666;">directions_car</mat-icon>
               </mat-form-field>
             </div>
@@ -45,20 +60,19 @@
               <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">Cor</label>
               <mat-form-field appearance="outline" style="width: 100%;">
                 <input matInput formControlName="color" placeholder="Ex: Prata"
-                      style="padding: 14px 0; font-size: 16px; height: 48px;">
+                  style="padding: 14px 0; font-size: 16px; height: 48px;">
                 <mat-icon matPrefix style="margin-right: 8px; color: #666;">palette</mat-icon>
               </mat-form-field>
             </div>
 
             <!-- Botões -->
             <div style="margin-top: 2rem;">
-              <button mat-raised-button color="primary" type="submit" *ngIf="!editingCarId"
-                    style="width: 100%; padding: 14px 0; font-size: 16px; height: 48px; font-weight: 500; 
+              <button mat-raised-button color="primary" type="submit" *ngIf="!editingCarId" style="width: 100%; padding: 14px 0; font-size: 16px; height: 48px; font-weight: 500; 
                     letter-spacing: 0.5px; border: 2px solid #303f9f; border-radius: 8px;">
                 <mat-icon style="margin-right: 8px;">save</mat-icon> Salvar
               </button>
-              <button mat-raised-button color="accent" type="button" *ngIf="editingCarId" (click)="saveCar(editingCarId!)"
-                    style="width: 100%; padding: 14px 0; font-size: 16px; height: 48px; font-weight: 500; 
+              <button mat-raised-button color="accent" type="button" *ngIf="editingCarId"
+                (click)="saveCar(editingCarId!)" style="width: 100%; padding: 14px 0; font-size: 16px; height: 48px; font-weight: 500; 
                     letter-spacing: 0.5px; border: 2px solid #ff4081; border-radius: 8px; margin-top: 1rem;">
                 <mat-icon style="margin-right: 8px;">update</mat-icon> Salvar Alterações
               </button>
@@ -69,8 +83,9 @@
         <!-- Lista de Carros -->
         <div>
           <h2 style="color: #3f51b5; margin-bottom: 1.5rem; font-weight: 500;">Lista de Carros</h2>
-          
-          <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
+
+          <table
+            style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
             <thead>
               <tr style="background-color: #3f51b5; color: white;">
                 <th style="padding: 12px; text-align: left;">Foto</th>
@@ -78,24 +93,28 @@
                 <th style="padding: 12px; text-align: left;">Placa</th>
                 <th style="padding: 12px; text-align: left;">Modelo</th>
                 <th style="padding: 12px; text-align: left;">Cor</th>
+                <th style="padding: 12px; text-align: left;">Uso</th>
                 <th style="padding: 12px; text-align: left;">Ações</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let car of cars" style="border-bottom: 1px solid #e0e0e0;">
                 <td style="padding: 12px;">
-                  <img *ngIf="car.photoUrl" [src]="car.photoUrl" alt="Foto" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
-                  <input type="file" (change)="onCarPhotoSelected($event, car.id)" style="display: block; margin-top: 8px;">
-                </td>
+                  <img *ngIf="car.photoUrl" 
+                       [src]="car.photoUrl" 
+                       alt="Miniatura do Carro" 
+                       style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                </td>                
                 <td style="padding: 12px;">{{ car.year }}</td>
                 <td style="padding: 12px;">{{ car.licensePlate }}</td>
                 <td style="padding: 12px;">{{ car.model }}</td>
                 <td style="padding: 12px;">{{ car.color }}</td>
+                <td style="padding: 12px;">{{ car.usageCount }}</td>
                 <td style="padding: 12px;">
                   <button mat-icon-button color="primary" (click)="enableEditing(car)" style="margin-right: 8px;">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="deleteCar(car.id)">
+                  <button mat-icon-button color="warn" (click)="deleteCar(car)">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </td>

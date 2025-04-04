@@ -19,6 +19,7 @@ import { UserService } from '../../core/services/user.service';
 import { Car } from '../../core/models/car.model';
 import { User } from '../../core/models/user.model';
 import { Router } from '@angular/router';
+import { CarService } from '../../core/services/car.service';
 
 interface CarForm {
   year: FormControl<number | null>;
@@ -58,12 +59,16 @@ export class UsersComponent implements OnInit {
   users: User[] = [];
   editingUserId: number | null = null;
   currentYear = new Date().getFullYear();
+  selectedUserPhoto: File | null = null;
+  carFiles: File[] = [];
+  previewPhotoUrl: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private carService: CarService
   ) {
     this.userForm = this.fb.group<UserForm>({
       firstName: this.fb.control('', Validators.required),
@@ -114,23 +119,33 @@ export class UsersComponent implements OnInit {
 
   loadUsers(): void {
     this.userService.getAll().subscribe(data => {
-      this.users = data;
+      this.users = data.map(user => {
+        if (user.photoUrl) {
+          this.userService.getPhoto(user.id!).subscribe(blob => {
+            const reader = new FileReader();
+            reader.onload = (e: any) => {
+              user.photoUrl = e.target.result;
+            };
+            reader.readAsDataURL(blob);
+          });
+        }
+        return user;
+      });
     });
   }
 
   onSubmit(): void {
     if (this.userForm.valid) {
       const formValue = this.userForm.value;
-  
+
       const rawCars = formValue.cars!.map(carGroup => {
         const carValue = carGroup;
-  
         const isEmpty =
           (carValue.year == null || carValue.year === 0) &&
           (!carValue.licensePlate || carValue.licensePlate.trim() === '') &&
           (!carValue.model || carValue.model.trim() === '') &&
           (!carValue.color || carValue.color.trim() === '');
-  
+
         if (isEmpty) {
           return null;
         }
@@ -142,9 +157,9 @@ export class UsersComponent implements OnInit {
           color: carValue.color
         } as Car;
       }) ?? [];
-  
+
       const filteredCars = rawCars.filter((car): car is Car => car !== null);
-  
+
       const userData: User = {
         firstName: formValue.firstName,
         lastName: formValue.lastName,
@@ -152,25 +167,65 @@ export class UsersComponent implements OnInit {
         birthday: formValue.birthday,
         login: formValue.login,
         password: formValue.password,
-        phone: formValue.phone
+        phone: formValue.phone,
       };
-  
+
       if (filteredCars.length > 0) {
         userData.cars = filteredCars;
       }
-  
-      this.userService.create(userData).subscribe({
-        next: () => {
+
+      const userObservable = this.editingUserId
+        ? this.userService.update(this.editingUserId, userData)
+        : this.userService.create(userData);
+
+      userObservable.subscribe({
+        next: (user) => {
+          if (this.selectedUserPhoto && user.id) {
+            this.userService.uploadUserPhoto(user.id, this.selectedUserPhoto).subscribe({
+              next: (updatedUser) => {
+                this.loadUsers();
+              },
+              error: (err) => console.error('Erro ao enviar foto do usuário:', err)
+            });
+          }
+
+          if (user.cars && user.cars.length > 0) {
+            user.cars.forEach((car, index) => {
+              const file = this.carFiles[index];
+              if (file && car.id) {
+                this.carService.uploadCarPhoto(car.id, file).subscribe({
+                  next: () => console.log(`Foto do carro ${car.id} enviada com sucesso.`),
+                  error: (err: any) => console.error(`Erro ao enviar foto do carro ${car.id}:`, err)
+                });
+              }
+            });
+          }
+
           this.resetForm();
-          this.showSuccess('Usuário criado com sucesso');
+          this.showSuccess(this.editingUserId ? 'Usuário atualizado com sucesso' : 'Usuário criado com sucesso');
+          this.carFiles = [];
+          this.selectedUserPhoto = null;
+          this.previewPhotoUrl = null;
         },
-        error: () => this.showError('Erro ao criar usuário')
+        error: () => this.showError(this.editingUserId ? 'Erro ao atualizar usuário' : 'Erro ao criar usuário')
       });
     } else {
       this.markFormGroupTouched(this.userForm);
     }
   }
-  
+
+  onUserPhotoSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedUserPhoto = file;
+      
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.previewPhotoUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
 
   enableEditing(user: User): void {
     this.editingUserId = user.id ?? null;
@@ -183,15 +238,20 @@ export class UsersComponent implements OnInit {
       phone: user.phone ?? ''
     });
 
-    this.carsFormArray.clear();
+    if (user.photoUrl) {
+      this.previewPhotoUrl = user.photoUrl;
+    } else {
+      this.previewPhotoUrl = null;
+    }
 
+    this.carsFormArray.clear();
     user.cars?.forEach(car => this.addCar(car));
   }
 
   saveUser(userId: number): void {
     if (this.userForm.valid) {
       const formValue = this.userForm.value;
-  
+
       const rawCars = formValue.cars?.map(carGroup => {
 
         const carValue = carGroup;
@@ -201,11 +261,11 @@ export class UsersComponent implements OnInit {
           (!carValue.licensePlate || carValue.licensePlate.trim() === '') &&
           (!carValue.model || carValue.model.trim() === '') &&
           (!carValue.color || carValue.color.trim() === '');
-        
+
         if (isEmpty) {
           return null;
         }
-        
+
         return {
           year: carValue.year,
           licensePlate: carValue.licensePlate,
@@ -213,9 +273,9 @@ export class UsersComponent implements OnInit {
           color: carValue.color
         } as Car;
       }) ?? [];
-  
+
       const filteredCars = rawCars.filter((car): car is Car => car !== null);
-  
+
       const userData: User = {
         id: userId,
         firstName: formValue.firstName,
@@ -226,11 +286,11 @@ export class UsersComponent implements OnInit {
         password: formValue.password,
         phone: formValue.phone,
       };
-  
+
       if (filteredCars.length > 0) {
         userData.cars = filteredCars;
       }
-  
+
       this.userService.update(userId, userData).subscribe({
         next: () => {
           this.resetForm();
@@ -241,7 +301,7 @@ export class UsersComponent implements OnInit {
     } else {
       this.markFormGroupTouched(this.userForm);
     }
-  }  
+  }
 
   deleteUser(user: User): void {
     if (confirm(`Tem certeza que deseja excluir ${user.firstName} ${user.lastName}?`)) {
@@ -259,19 +319,12 @@ export class UsersComponent implements OnInit {
     this.resetForm();
   }
 
-  onUserPhotoSelected(event: Event, userId: number | undefined): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) {
-      return;
-    }
-    const file = input.files[0];
-    console.log(`Foto selecionada para o usuário ${userId}:`, file);
-  }
-
   resetForm(): void {
     this.editingUserId = null;
     this.userForm.reset();
     this.carsFormArray.clear();
+    this.selectedUserPhoto = null;
+    this.previewPhotoUrl = null;
     this.loadUsers();
   }
 
@@ -307,4 +360,17 @@ export class UsersComponent implements OnInit {
     }
     return control as FormControl;
   }
+
+  onUserPhotoSelectedForNew(event: any): void {
+    if (event.target.files && event.target.files.length > 0) {
+      this.selectedUserPhoto = event.target.files[0];
+    }
+  }
+
+  onCarFileSelected(event: any, index: number): void {
+    if (event.target.files && event.target.files.length > 0) {
+      this.carFiles[index] = event.target.files[0];
+    }
+  }
+
 }

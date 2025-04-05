@@ -8,7 +8,7 @@ app.get('/*', function(req,res) {
   res.sendFile(path.join(__dirname + '/dist/car-users-frontend/browser/index.html'));
 });
 
-const PORT = process.env.PORT || 4200;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });

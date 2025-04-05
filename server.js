@@ -20,7 +20,7 @@ const app = express();
 // nome da pasta no dist que sera feito o build
 const appName = 'car-users-frontend';
 // local onde build ira gerar os arquivos
-const outputPath = `${__dirname}/dist/${appName}/browser`;
+const outputPath = `${__dirname}/dist/${appName}`;
 
 // seta o diretorio de build para servir o conteudo Angular
 app.use(express.static(outputPath));

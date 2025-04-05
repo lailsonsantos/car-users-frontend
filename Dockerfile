@@ -23,7 +23,7 @@ FROM node:18
 WORKDIR /app
 
 # Copia os arquivos necessários do estágio de build
-COPY --from=build /app/dist/car-users-frontend /app/dist/car-users-frontend
+COPY --from=build /app/dist/car-users-frontend/browser /app/dist/car-users-frontend
 COPY server.js .
 
 # Instala as dependências de produção

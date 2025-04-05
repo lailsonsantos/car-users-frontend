@@ -48,7 +48,7 @@ ng serve
 
 Acesse: http://localhost:4200
 
-🐳 Docker + NGINX
+🐳 Docker + Express
 # Build da imagem
 docker compose up --build
 

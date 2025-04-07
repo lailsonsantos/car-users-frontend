@@ -138,16 +138,16 @@ docker compose up --build
 No terminal, execute o comando abaixo para gerar os arquivos de produção:
 
 ```bash
-ng build --configuration=production
+ng build
 ```
 
-Isso criará a pasta `dist/browser`, contendo os arquivos prontos para produção.
+Isso criará a pasta `dist/car-users-frontend/browser`, contendo os arquivos prontos para produção.
 
 ---
 
-## 📂 2. Copiar os arquivos do `dist/browser`
+## 📂 2. Copiar os arquivos do `dist/car-users-frontend/browser`
 
-Acesse a pasta `dist/browser/seu-projeto/` e copie todos os arquivos gerados (HTML, CSS, JS, etc).
+Acesse a pasta `dist/car-users-frontend/browser/seu-projeto/` e copie todos os arquivos gerados (HTML, CSS, JS, etc).
 
 ---
 
@@ -189,7 +189,7 @@ Depois de criar o bucket:
 
 1. Vá para a aba **"Objects"** do bucket
 2. Clique em **"Upload"**
-3. Envie **todos os arquivos da pasta `dist/browser/seu-projeto/`**
+3. Envie **todos os arquivos da pasta `dist/car-users-frontend/browser/seu-projeto/`**
 4. Marque como **"public"** se solicitado
 
 ---

@@ -33,7 +33,6 @@ A aplicação foi dividida em dois projetos: **Frontend Angular** e **Backend Sp
 
 ### 🧱 Estrutura
 
-- Backend com Spring Boot 3, Maven, e banco de dados H2 para persistência.
 - Frontend com Angular 15+ usando Angular Material, Reactive Forms e Interceptor de token.
 - Documentação da API via Swagger disponível em `/swagger-ui.html`.
 
@@ -100,21 +99,15 @@ A aplicação foi dividida em dois projetos: **Frontend Angular** e **Backend Sp
 ## 🚀 COMO EXECUTAR O PROJETO
 
 ### ⚙️ Requisitos
-- Java 17
 - Node.js 18+
 - Angular CLI
-- Maven
 - Docker (opcional)
 
 ### 🖥️ Rodando localmente sem Docker
 
 ```bash
-# Backend
-cd backend
-./mvnw spring-boot:run
 
 # Frontend
-cd frontend
 npm install
 ng serve
 
@@ -130,66 +123,124 @@ ng serve
 docker compose up --build
 
 # Frontend disponível em: http://localhost:4201
-# Backend disponível em: http://localhost:8080
 ```
 
 ---
 
-## ☁️ DEPLOY NO HEROKU
+# ☁️ DEPLOY NA AWS (Manual)
 
-### 🔧 FRONTEND
-
-```bash
-# Acesse a pasta raiz do frontend
-cd frontend
-
-# Login no Heroku
-heroku login
-
-# Crie o app
-heroku create nome-do-app-frontend
-
-# Set buildpack para Node.js
-heroku buildpacks:set heroku/nodejs
-
-# Envie o código
-git push heroku main
-
-# Abra o app
-heroku open
-```
-
-### 🔧 BACKEND
-
-```bash
-cd backend
-
-heroku create nome-do-app-backend
-heroku buildpacks:set heroku/java
-git push heroku main
-```
+## 🔧 FRONTEND
 
 ---
 
-## 🧪 TESTES
+## 📦 1. Build do Projeto Angular
 
-### ✅ Frontend (Angular)
+No terminal, execute o comando abaixo para gerar os arquivos de produção:
+
 ```bash
-cd frontend
-ng test
+ng build --configuration=production
 ```
 
-### ✅ Backend (Spring Boot)
-```bash
-cd backend
-./mvnw test
+Isso criará a pasta `dist/browser`, contendo os arquivos prontos para produção.
+
+---
+
+## 📂 2. Copiar os arquivos do `dist/browser`
+
+Acesse a pasta `dist/browser/seu-projeto/` e copie todos os arquivos gerados (HTML, CSS, JS, etc).
+
+---
+
+## ☁️ 3. Criar bucket S3 na AWS
+
+1. Acesse o console da **AWS S3**: https://s3.console.aws.amazon.com/s3
+2. Clique em **"Create bucket"**
+3. Dê um nome único (ex: `meu-app-angular-prod`)
+4. Desmarque a opção **"Block all public access"**
+5. Crie o bucket
+
+### 🔐 Configurar permissões públicas
+
+Depois de criar o bucket:
+
+1. Vá em **"Permissions" > "Bucket policy"**
+2. Adicione a seguinte política para permitir acesso público aos arquivos:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::meu-app-angular-prod/*"
+    }
+  ]
+}
 ```
+
+(Altere `meu-app-angular-prod` para o nome do seu bucket)
+
+---
+
+## ⬆️ 4. Fazer upload dos arquivos no S3
+
+1. Vá para a aba **"Objects"** do bucket
+2. Clique em **"Upload"**
+3. Envie **todos os arquivos da pasta `dist/browser/seu-projeto/`**
+4. Marque como **"public"** se solicitado
+
+---
+
+## 🌐 5. Criar uma distribuição CloudFront
+
+1. Acesse o console do **CloudFront**: https://console.aws.amazon.com/cloudfront
+2. Clique em **"Create Distribution"**
+3. Em **"Origin domain"**, selecione o bucket S3 criado
+4. Marque **"Restrict Bucket Access"** como **No**
+5. Em **Default root object**, digite: `index.html`
+6. Crie a distribuição
+
+---
+
+## ⚠️ 6. Configurar regras de erro (404 e 403)
+
+1. Acesse a distribuição criada no CloudFront
+2. Vá na aba **"Error pages"**
+3. Clique em **"Create custom error response"**
+4. Configure para ambos os erros:
+
+   - **HTTP error code**: `403`
+   - **Customize error response**: Yes
+   - **Response page path**: `/index.html`
+   - **HTTP response code**: `200`
+
+   E depois:
+
+   - **HTTP error code**: `404`
+   - **Customize error response**: Yes
+   - **Response page path**: `/index.html`
+   - **HTTP response code**: `200`
+
+Isso garante que ao acessar rotas do Angular diretamente (como `/login`, `/dashboard`), o app funcione corretamente.
+
+---
+
+## 🔗 URL de produção:
+
+```
+https://d1kecc5wokrpzu.cloudfront.net
+```
+
+Esse endereço simula o mesmo comportamento de um frontend local em `http://localhost:4200`.
 
 ---
 
 ## 🧩 ARQUIVOS IMPORTANTES
 
-- `Dockerfile`: Build de frontend + backend.
+- `Dockerfile`: Build de frontend.
 - `Procfile`: Configura a execução do projeto no Heroku.
 - `server.js`: Servidor Express para servir o Angular em produção.
 - `angular.json`: Configuração de build Angular com tema e assets.

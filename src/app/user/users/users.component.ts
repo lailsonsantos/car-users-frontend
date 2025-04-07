@@ -441,9 +441,10 @@ export class UsersComponent implements OnInit {
     return 'Valor inválido';
   }
 
-  private showError(message: string): void {
+  private showError(error: any): void {
+    const message = error?.error?.message || error?.message || 'Erro desconhecido';
     this.snackBar.open(message, 'Fechar', {
-      duration: 5000,
+      duration: 3000,
       panelClass: ['error-snackbar']
     });
   }
@@ -475,7 +476,9 @@ export class UsersComponent implements OnInit {
           }
         },
         error: (err) => {
-          this.showError(err);
+          const errorMessage =
+            err?.error?.message || err?.message || 'Usuário não encontrado';
+          this.showError(errorMessage);
         }
       });
     } else {

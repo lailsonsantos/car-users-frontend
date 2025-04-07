@@ -282,14 +282,31 @@ export class CarsComponent implements OnInit {
   }
   
   searchCar(): void {
-    if (this.searchCarId && this.searchCarId.trim() !== '') {
+    if (this.searchCarId) {
       const carId = Number(this.searchCarId);
       this.carService.getById(carId, this.currentUserId).subscribe({
         next: (car) => {
-          this.cars = [car];
+          if (car) {
+            if (car.photoUrl && car.id) {
+              this.carService.getCarPhoto(car.id).subscribe(blob => {
+                const reader = new FileReader();
+                reader.onload = (e: any) => {
+                  car.photoUrl = e.target.result;
+                  this.cars = [car];
+                };
+                reader.readAsDataURL(blob);
+              });
+            } else {
+              this.cars = [car];
+            }
+          } else {
+            this.cars = [];
+            this.showError('Carro não encontrado');
+          }
         },
-        error: (err) => {
-          this.showError(err);
+        error: () => {
+          this.cars = [];
+          this.showError('Carro não encontrado');
         }
       });
     } else {

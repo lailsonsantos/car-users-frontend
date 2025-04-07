@@ -242,7 +242,7 @@ export class CarsComponent implements OnInit {
   }
 
   private showError(error: any): void {
-    const message = error?.error?.message || error?.message || 'Erro desconhecido';
+    const message = error || 'Erro desconhecido';
     this.snackBar.open(message, 'Fechar', {
       duration: 3000,
       panelClass: ['error-snackbar']

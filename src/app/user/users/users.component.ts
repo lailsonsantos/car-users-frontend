@@ -442,7 +442,8 @@ export class UsersComponent implements OnInit {
   }
 
   private showError(error: any): void {
-    const message = error?.error?.message || error?.message || 'Erro desconhecido';
+    debugger
+    const message = error || 'Erro desconhecido';
     this.snackBar.open(message, 'Fechar', {
       duration: 3000,
       panelClass: ['error-snackbar']
